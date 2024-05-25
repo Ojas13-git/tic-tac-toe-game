@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const gridSizeInput = document.getElementById('grid-size');
-    const winStreakInput = document.getElementById('win-streak');
     const startGameButton = document.getElementById('start-game');
     const restartGameButton = document.getElementById('restart-game');
     const gameBoard = document.getElementById('game-board');
@@ -10,8 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const player1ScoreElement = document.getElementById('player1-score');
     const player2ScoreElement = document.getElementById('player2-score');
 
-    let gridSize = parseInt(gridSizeInput.value);
-    let winStreak = parseInt(winStreakInput.value);
     let board = [];
     let currentPlayer = 'X';
     let gameActive = true;
@@ -23,18 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const clickSound = new Audio('sounds/click.mp3');
     const winSound = new Audio('sounds/win.mp3');
 
-    gridSizeInput.addEventListener('input', (e) => {
-        const newSize = parseInt(e.target.value);
-        winStreakInput.max = newSize;
-        if (winStreak > newSize) {
-            winStreak = newSize;
-            winStreakInput.value = newSize;
-        }
-    });
-
     startGameButton.addEventListener('click', () => {
-        gridSize = parseInt(gridSizeInput.value);
-        winStreak = parseInt(winStreakInput.value);
         player1Name = player1NameInput.value || 'Player 1';
         player2Name = player2NameInput.value || 'Player 2';
         initGame();
@@ -44,7 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
     restartGameButton.addEventListener('click', initGame);
 
     function initGame() {
-        board = Array.from({ length: gridSize }, () => Array(gridSize).fill(''));
+        board = [
+            ['', '', ''],
+            ['', '', ''],
+            ['', '', '']
+        ];
         currentPlayer = 'X';
         gameActive = true;
         gameStatus.textContent = '';
@@ -53,8 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderBoard() {
         gameBoard.innerHTML = '';
-        gameBoard.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-        gameBoard.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
+        gameBoard.style.gridTemplateColumns = `repeat(3, 1fr)`;
+        gameBoard.style.gridTemplateRows = `repeat(3, 1fr)`;
 
         board.forEach((row, rowIndex) => {
             row.forEach((cell, cellIndex) => {
@@ -97,20 +86,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function checkWin() {
-        // Check rows, columns, and diagonals for a win
-        for (let i = 0; i < gridSize; i++) {
-            for (let j = 0; j <= gridSize - winStreak; j++) {
-                if (board[i].slice(j, j + winStreak).every(cell => cell === currentPlayer)) return true;
-                if (board.map(row => row[j]).slice(i, i + winStreak).every(cell => cell === currentPlayer)) return true;
-            }
+        // Check rows and columns
+        for (let i = 0; i < 3; i++) {
+            if (board[i][0] === currentPlayer && board[i][1] === currentPlayer && board[i][2] === currentPlayer) return true;
+            if (board[0][i] === currentPlayer && board[1][i] === currentPlayer && board[2][i] === currentPlayer) return true;
         }
 
-        for (let i = 0; i <= gridSize - winStreak; i++) {
-            for (let j = 0; j <= gridSize - winStreak; j++) {
-                if (Array.from({ length: winStreak }, (_, k) => board[i + k][j + k]).every(cell => cell === currentPlayer)) return true;
-                if (Array.from({ length: winStreak }, (_, k) => board[i + k][j + winStreak - 1 - k]).every(cell => cell === currentPlayer)) return true;
-            }
-        }
+        // Check diagonals
+        if (board[0][0] === currentPlayer && board[1][1] === currentPlayer && board[2][2] === currentPlayer) return true;
+        if (board[0][2] === currentPlayer && board[1][1] === currentPlayer && board[2][0] === currentPlayer) return true;
 
         return false;
     }
